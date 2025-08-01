@@ -9,13 +9,23 @@
     font-family: Arial, sans-serif;
     margin: 20px;
   }
-  .restaurant {
-    margin-bottom: 15px;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+  }
+  th {
+    background: #f4f4f4;
   }
   .stars {
     position: relative;
     display: inline-block;
-    font-size: 20px;
+    font-size: 18px;
     color: #ccc; /* empty stars */
   }
   .stars::before {
@@ -35,13 +45,13 @@
 <div id="ratings-container">Loading ratings...</div>
 
 <script>
-  // Your Google Sheet JSON URL
+  // Google Sheet JSON URL
   const SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/1PLjQubtHRFGz887IxDJdiF0Y19tnmOdTAeyBNvyGMZg/gviz/tq?tqx=out:json";
 
   async function fetchData() {
     const response = await fetch(SHEET_JSON_URL);
     const text = await response.text();
-    const json = JSON.parse(text.substr(47).slice(0, -2)); // Remove JSONP wrapper
+    const json = JSON.parse(text.substr(47).slice(0, -2));
     
     return json.table.rows.map(row => ({
       name: row.c[0]?.v || "",
@@ -51,32 +61,47 @@
     }));
   }
 
+  function createStars(score) {
+    const percent = (score / 5) * 100;
+    return `<span class="stars" style="--percent:${percent}%">★★★★★</span>`;
+  }
+
   function calculateAverage(r) {
     const ratings = [r.stephen, r.julie, r.dasan].filter(val => val > 0);
     if (ratings.length === 0) return 0;
     return ratings.reduce((a, b) => a + b, 0) / ratings.length;
   }
 
-  function createStars(avg) {
-    const percent = (avg / 5) * 100;
-    return `<span class="stars" style="--percent:${percent}%">★★★★★</span>`;
-  }
-
   async function renderRatings() {
     const restaurants = await fetchData();
     const container = document.getElementById("ratings-container");
-    container.innerHTML = "";
+
+    let tableHTML = `
+      <table>
+        <tr>
+          <th>Restaurant</th>
+          <th>Julie</th>
+          <th>Stephen</th>
+          <th>Dasan</th>
+          <th>Average</th>
+        </tr>
+    `;
 
     restaurants.forEach(r => {
       const avg = calculateAverage(r);
-      const div = document.createElement("div");
-      div.classList.add("restaurant");
-      div.innerHTML = `
-        <strong>${r.name}</strong> - Avg: ${avg.toFixed(1)}
-        ${createStars(avg)}
+      tableHTML += `
+        <tr>
+          <td>${r.name}</td>
+          <td>${r.julie ? createStars(r.julie) + ` (${r.julie.toFixed(1)})` : "-"}</td>
+          <td>${r.stephen ? createStars(r.stephen) + ` (${r.stephen.toFixed(1)})` : "-"}</td>
+          <td>${r.dasan ? createStars(r.dasan) + ` (${r.dasan.toFixed(1)})` : "-"}</td>
+          <td>${avg ? createStars(avg) + ` (${avg.toFixed(1)})` : "-"}</td>
+        </tr>
       `;
-      container.appendChild(div);
     });
+
+    tableHTML += `</table>`;
+    container.innerHTML = tableHTML;
   }
 
   renderRatings();
