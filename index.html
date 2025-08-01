@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant Star Ratings</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+  .restaurant {
+    margin-bottom: 15px;
+  }
+  .stars {
+    position: relative;
+    display: inline-block;
+    font-size: 20px;
+    color: #ccc; /* empty stars */
+  }
+  .stars::before {
+    content: "★★★★★";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--percent);
+    overflow: hidden;
+    color: gold; /* filled stars */
+  }
+</style>
+</head>
+<body>
+
+<h2>Morristown Restaurant Ratings</h2>
+<div id="ratings-container">Loading ratings...</div>
+
+<script>
+  // Your Google Sheet JSON URL
+  const SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/1PLjQubtHRFGz887IxDJdiF0Y19tnmOdTAeyBNvyGMZg/gviz/tq?tqx=out:json";
+
+  async function fetchData() {
+    const response = await fetch(SHEET_JSON_URL);
+    const text = await response.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2)); // Remove JSONP wrapper
+    
+    return json.table.rows.map(row => ({
+      name: row.c[0]?.v || "",
+      stephen: parseFloat(row.c[1]?.v) || 0,
+      julie: parseFloat(row.c[2]?.v) || 0,
+      dasan: parseFloat(row.c[3]?.v) || 0
+    }));
+  }
+
+  function calculateAverage(r) {
+    const ratings = [r.stephen, r.julie, r.dasan].filter(val => val > 0);
+    if (ratings.length === 0) return 0;
+    return ratings.reduce((a, b) => a + b, 0) / ratings.length;
+  }
+
+  function createStars(avg) {
+    const percent = (avg / 5) * 100;
+    return `<span class="stars" style="--percent:${percent}%">★★★★★</span>`;
+  }
+
+  async function renderRatings() {
+    const restaurants = await fetchData();
+    const container = document.getElementById("ratings-container");
+    container.innerHTML = "";
+
+    restaurants.forEach(r => {
+      const avg = calculateAverage(r);
+      const div = document.createElement("div");
+      div.classList.add("restaurant");
+      div.innerHTML = `
+        <strong>${r.name}</strong> - Avg: ${avg.toFixed(1)}
+        ${createStars(avg)}
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  renderRatings();
+</script>
+
+</body>
+</html>
