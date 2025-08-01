@@ -7,16 +7,23 @@
 <style>
   body {
     font-family: Arial, sans-serif;
-    margin: 20px;
+    margin: 10px;
+  }
+  h2 {
+    font-size: 1.4em;
+  }
+  .table-wrapper {
+    overflow-x: auto; /* Allow horizontal scroll on small screens */
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
+    margin-top: 10px;
+    font-size: 0.95em;
   }
   th, td {
     border-bottom: 1px solid #ddd;
-    padding: 8px;
+    padding: 6px;
     text-align: center;
   }
   th {
@@ -25,14 +32,15 @@
   td:first-child {
     text-align: left;
     font-weight: bold;
-    font-size: 1.05em;
+    font-size: 1em;
+    min-width: 120px; /* Keep restaurant names readable */
   }
 
   /* Base stars style */
   .stars {
     position: relative;
     display: inline-block;
-    font-size: 18px;
+    font-size: 16px;
     color: #ccc; /* empty stars */
   }
   .stars::before {
@@ -68,12 +76,30 @@
   .rank-3 td {
     background-color: #CD7F3222; /* bronze, transparent */
   }
+
+  /* 📱 Mobile adjustments */
+  @media (max-width: 600px) {
+    table {
+      font-size: 0.85em;
+    }
+    td:first-child {
+      font-size: 0.9em;
+    }
+    .stars {
+      font-size: 14px;
+    }
+    h2 {
+      font-size: 1.2em;
+    }
+  }
 </style>
 </head>
 <body>
 
 <h2>Morristown Restaurant Ratings (Ranked)</h2>
-<div id="ratings-container">Loading ratings...</div>
+<div class="table-wrapper">
+  <div id="ratings-container">Loading ratings...</div>
+</div>
 
 <script>
   const SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/1PLjQubtHRFGz887IxDJdiF0Y19tnmOdTAeyBNvyGMZg/gviz/tq?tqx=out:json";
@@ -105,13 +131,11 @@
   async function renderRatings() {
     let restaurants = await fetchData();
 
-    // Add average to each restaurant
     restaurants = restaurants.map(r => ({
       ...r,
       avg: calculateAverage(r)
     }));
 
-    // Sort by average rating (highest first)
     restaurants.sort((a, b) => b.avg - a.avg);
 
     const container = document.getElementById("ratings-container");
