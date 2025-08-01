@@ -14,6 +14,36 @@
     font-size: 1.4em;
     margin-bottom: 15px;
   }
+
+  /* ===== Desktop Table View ===== */
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.95em;
+  }
+  th, td {
+    border-bottom: 1px solid #ddd;
+    padding: 6px;
+    text-align: center;
+  }
+  th {
+    background: #f4f4f4;
+  }
+  td:first-child {
+    text-align: left;
+    font-weight: bold;
+    font-size: 1em;
+    min-width: 120px;
+  }
+
+  /* ===== Mobile Card View ===== */
+  .card-container {
+    display: none;
+  }
   .restaurant-card {
     background: white;
     border-radius: 8px;
@@ -37,11 +67,13 @@
     flex: 0 0 70px;
     text-align: left;
   }
+
+  /* ===== Stars ===== */
   .stars {
     position: relative;
     display: inline-block;
     font-size: 16px;
-    color: #ccc; /* empty stars */
+    color: #ccc;
   }
   .stars::before {
     content: "★★★★★";
@@ -56,16 +88,26 @@
   .stars-dasan::before { color: #8da0cb; }
   .stars-avg::before { color: gold; }
 
-  /* Top 3 Highlights */
-  .rank-1 { border-left: 5px solid #FFD700; }
-  .rank-2 { border-left: 5px solid #C0C0C0; }
-  .rank-3 { border-left: 5px solid #CD7F32; }
+  /* ===== Top 3 Highlights ===== */
+  .rank-1 td, .rank-1 { background-color: #FFD70022; }
+  .rank-2 td, .rank-2 { background-color: #C0C0C022; }
+  .rank-3 td, .rank-3 { background-color: #CD7F3222; }
+  .rank-1.restaurant-card { border-left: 5px solid #FFD700; }
+  .rank-2.restaurant-card { border-left: 5px solid #C0C0C0; }
+  .rank-3.restaurant-card { border-left: 5px solid #CD7F32; }
+
+  /* ===== Mobile Switch ===== */
+  @media (max-width: 768px) {
+    .table-wrapper { display: none; }
+    .card-container { display: block; }
+  }
 </style>
 </head>
 <body>
 
 <h2>Morristown Restaurant Ratings (Ranked)</h2>
-<div id="ratings-container">Loading ratings...</div>
+<div class="table-wrapper" id="table-container">Loading table...</div>
+<div class="card-container" id="card-container">Loading cards...</div>
 
 <script>
   const SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/1PLjQubtHRFGz887IxDJdiF0Y19tnmOdTAeyBNvyGMZg/gviz/tq?tqx=out:json";
@@ -104,9 +146,36 @@
 
     restaurants.sort((a, b) => b.avg - a.avg);
 
-    const container = document.getElementById("ratings-container");
-    container.innerHTML = "";
+    /* ===== Desktop Table View ===== */
+    const tableContainer = document.getElementById("table-container");
+    let tableHTML = `
+      <table>
+        <tr>
+          <th>Restaurant</th>
+          <th>Julie</th>
+          <th>Stephen</th>
+          <th>Dasan</th>
+          <th>Average</th>
+        </tr>
+    `;
+    restaurants.forEach((r, index) => {
+      const rankClass = index === 0 ? "rank-1" : index === 1 ? "rank-2" : index === 2 ? "rank-3" : "";
+      tableHTML += `
+        <tr class="${rankClass}">
+          <td>${r.name}</td>
+          <td>${r.julie ? createStars(r.julie, "stars-julie") : "-"}</td>
+          <td>${r.stephen ? createStars(r.stephen, "stars-stephen") : "-"}</td>
+          <td>${r.dasan ? createStars(r.dasan, "stars-dasan") : "-"}</td>
+          <td>${r.avg ? createStars(r.avg, "stars-avg") : "-"}</td>
+        </tr>
+      `;
+    });
+    tableHTML += `</table>`;
+    tableContainer.innerHTML = tableHTML;
 
+    /* ===== Mobile Card View ===== */
+    const cardContainer = document.getElementById("card-container");
+    cardContainer.innerHTML = "";
     restaurants.forEach((r, index) => {
       const rankClass = index === 0 ? "rank-1" : index === 1 ? "rank-2" : index === 2 ? "rank-3" : "";
       const card = document.createElement("div");
@@ -118,7 +187,7 @@
         <div class="rating-row"><span class="label">Dasan</span>${r.dasan ? createStars(r.dasan, "stars-dasan") : "-"}</div>
         <div class="rating-row"><span class="label">Average</span>${r.avg ? createStars(r.avg, "stars-avg") : "-"}</div>
       `;
-      container.appendChild(card);
+      cardContainer.appendChild(card);
     });
   }
 
