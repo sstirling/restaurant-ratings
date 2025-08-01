@@ -57,11 +57,22 @@
   .stars-avg::before {
     color: gold;
   }
+
+  /* Highlight Top 3 */
+  .rank-1 td {
+    background-color: #FFD70022; /* gold, transparent */
+  }
+  .rank-2 td {
+    background-color: #C0C0C022; /* silver, transparent */
+  }
+  .rank-3 td {
+    background-color: #CD7F3222; /* bronze, transparent */
+  }
 </style>
 </head>
 <body>
 
-<h2>Morristown Restaurant Ratings</h2>
+<h2>Morristown Restaurant Ratings (Ranked)</h2>
 <div id="ratings-container">Loading ratings...</div>
 
 <script>
@@ -92,7 +103,17 @@
   }
 
   async function renderRatings() {
-    const restaurants = await fetchData();
+    let restaurants = await fetchData();
+
+    // Add average to each restaurant
+    restaurants = restaurants.map(r => ({
+      ...r,
+      avg: calculateAverage(r)
+    }));
+
+    // Sort by average rating (highest first)
+    restaurants.sort((a, b) => b.avg - a.avg);
+
     const container = document.getElementById("ratings-container");
 
     let tableHTML = `
@@ -106,15 +127,15 @@
         </tr>
     `;
 
-    restaurants.forEach(r => {
-      const avg = calculateAverage(r);
+    restaurants.forEach((r, index) => {
+      const rankClass = index === 0 ? "rank-1" : index === 1 ? "rank-2" : index === 2 ? "rank-3" : "";
       tableHTML += `
-        <tr>
+        <tr class="${rankClass}">
           <td>${r.name}</td>
           <td>${r.julie ? createStars(r.julie, "stars-julie") + ` (${r.julie.toFixed(1)})` : "-"}</td>
           <td>${r.stephen ? createStars(r.stephen, "stars-stephen") + ` (${r.stephen.toFixed(1)})` : "-"}</td>
           <td>${r.dasan ? createStars(r.dasan, "stars-dasan") + ` (${r.dasan.toFixed(1)})` : "-"}</td>
-          <td>${avg ? createStars(avg, "stars-avg") + ` (${avg.toFixed(1)})` : "-"}</td>
+          <td>${r.avg ? createStars(r.avg, "stars-avg") + ` (${r.avg.toFixed(1)})` : "-"}</td>
         </tr>
       `;
     });
