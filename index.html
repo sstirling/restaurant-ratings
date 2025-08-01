@@ -3,35 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Restaurant Star Ratings</title>
+<title>CGS Morristown Food Ranking</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    margin: 10px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
     background: #fafafa;
+    color: #333;
   }
-  h2 {
-    font-size: 1.4em;
-    margin-bottom: 15px;
+
+  /* ===== Header Section ===== */
+  header {
+    background: linear-gradient(135deg, #8da0cb, #66c2a5);
+    padding: 30px 15px;
+    color: white;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 2em;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  header p {
+    font-size: 1.05em;
+    margin-top: 10px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: 300;
+    line-height: 1.5;
   }
 
   /* ===== Desktop Table View ===== */
   .table-wrapper {
     overflow-x: auto;
+    margin: 15px;
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    background: white;
     font-size: 0.95em;
+    border-radius: 8px;
+    overflow: hidden;
   }
   th, td {
     border-bottom: 1px solid #ddd;
-    padding: 6px;
+    padding: 10px;
     text-align: center;
   }
   th {
     background: #f4f4f4;
+    font-weight: 600;
   }
   td:first-child {
     text-align: left;
@@ -43,12 +67,13 @@
   /* ===== Mobile Card View ===== */
   .card-container {
     display: none;
+    margin: 15px;
   }
   .restaurant-card {
     background: white;
     border-radius: 8px;
     padding: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   .restaurant-name {
@@ -100,12 +125,18 @@
   @media (max-width: 768px) {
     .table-wrapper { display: none; }
     .card-container { display: block; }
+    header h1 { font-size: 1.6em; }
+    header p { font-size: 0.95em; }
   }
 </style>
 </head>
 <body>
 
-<h2>Morristown Restaurant Ratings (Ranked)</h2>
+<header>
+  <h1>CGS Morristown Food Ranking</h1>
+  <p>Morristown has over four dozen eateries. Julie Caggiano, Dasan Caggiano‑Green and Stephen Stirling love food. Here, we rate the food we love, locally.</p>
+</header>
+
 <div class="table-wrapper" id="table-container">Loading table...</div>
 <div class="card-container" id="card-container">Loading cards...</div>
 
