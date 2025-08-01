@@ -8,35 +8,35 @@
   body {
     font-family: Arial, sans-serif;
     margin: 10px;
+    background: #fafafa;
   }
   h2 {
     font-size: 1.4em;
+    margin-bottom: 15px;
   }
-  .table-wrapper {
-    overflow-x: auto; /* Allow horizontal scroll on small screens */
+  .restaurant-card {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+  .restaurant-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 6px;
+  }
+  .rating-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 3px 0;
     font-size: 0.95em;
   }
-  th, td {
-    border-bottom: 1px solid #ddd;
-    padding: 6px;
-    text-align: center;
-  }
-  th {
-    background: #f4f4f4;
-  }
-  td:first-child {
+  .label {
+    flex: 0 0 70px;
     text-align: left;
-    font-weight: bold;
-    font-size: 1em;
-    min-width: 120px; /* Keep restaurant names readable */
   }
-
-  /* Base stars style */
   .stars {
     position: relative;
     display: inline-block;
@@ -51,55 +51,21 @@
     width: var(--percent);
     overflow: hidden;
   }
+  .stars-julie::before { color: #66c2a5; }
+  .stars-stephen::before { color: #fc8d62; }
+  .stars-dasan::before { color: #8da0cb; }
+  .stars-avg::before { color: gold; }
 
-  /* Colors for each person */
-  .stars-julie::before {
-    color: #66c2a5;
-  }
-  .stars-stephen::before {
-    color: #fc8d62;
-  }
-  .stars-dasan::before {
-    color: #8da0cb;
-  }
-  .stars-avg::before {
-    color: gold;
-  }
-
-  /* Highlight Top 3 */
-  .rank-1 td {
-    background-color: #FFD70022; /* gold, transparent */
-  }
-  .rank-2 td {
-    background-color: #C0C0C022; /* silver, transparent */
-  }
-  .rank-3 td {
-    background-color: #CD7F3222; /* bronze, transparent */
-  }
-
-  /* 📱 Mobile adjustments */
-  @media (max-width: 600px) {
-    table {
-      font-size: 0.85em;
-    }
-    td:first-child {
-      font-size: 0.9em;
-    }
-    .stars {
-      font-size: 14px;
-    }
-    h2 {
-      font-size: 1.2em;
-    }
-  }
+  /* Top 3 Highlights */
+  .rank-1 { border-left: 5px solid #FFD700; }
+  .rank-2 { border-left: 5px solid #C0C0C0; }
+  .rank-3 { border-left: 5px solid #CD7F32; }
 </style>
 </head>
 <body>
 
 <h2>Morristown Restaurant Ratings (Ranked)</h2>
-<div class="table-wrapper">
-  <div id="ratings-container">Loading ratings...</div>
-</div>
+<div id="ratings-container">Loading ratings...</div>
 
 <script>
   const SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/1PLjQubtHRFGz887IxDJdiF0Y19tnmOdTAeyBNvyGMZg/gviz/tq?tqx=out:json";
@@ -119,7 +85,7 @@
 
   function createStars(score, personClass) {
     const percent = (score / 5) * 100;
-    return `<span class="stars ${personClass}" style="--percent:${percent}%">★★★★★</span>`;
+    return `<span class="stars ${personClass}" style="--percent:${percent}%">★★★★★</span> (${score.toFixed(1)})`;
   }
 
   function calculateAverage(r) {
@@ -139,33 +105,21 @@
     restaurants.sort((a, b) => b.avg - a.avg);
 
     const container = document.getElementById("ratings-container");
-
-    let tableHTML = `
-      <table>
-        <tr>
-          <th>Restaurant</th>
-          <th>Julie</th>
-          <th>Stephen</th>
-          <th>Dasan</th>
-          <th>Average</th>
-        </tr>
-    `;
+    container.innerHTML = "";
 
     restaurants.forEach((r, index) => {
       const rankClass = index === 0 ? "rank-1" : index === 1 ? "rank-2" : index === 2 ? "rank-3" : "";
-      tableHTML += `
-        <tr class="${rankClass}">
-          <td>${r.name}</td>
-          <td>${r.julie ? createStars(r.julie, "stars-julie") + ` (${r.julie.toFixed(1)})` : "-"}</td>
-          <td>${r.stephen ? createStars(r.stephen, "stars-stephen") + ` (${r.stephen.toFixed(1)})` : "-"}</td>
-          <td>${r.dasan ? createStars(r.dasan, "stars-dasan") + ` (${r.dasan.toFixed(1)})` : "-"}</td>
-          <td>${r.avg ? createStars(r.avg, "stars-avg") + ` (${r.avg.toFixed(1)})` : "-"}</td>
-        </tr>
+      const card = document.createElement("div");
+      card.className = `restaurant-card ${rankClass}`;
+      card.innerHTML = `
+        <div class="restaurant-name">${r.name}</div>
+        <div class="rating-row"><span class="label">Julie</span>${r.julie ? createStars(r.julie, "stars-julie") : "-"}</div>
+        <div class="rating-row"><span class="label">Stephen</span>${r.stephen ? createStars(r.stephen, "stars-stephen") : "-"}</div>
+        <div class="rating-row"><span class="label">Dasan</span>${r.dasan ? createStars(r.dasan, "stars-dasan") : "-"}</div>
+        <div class="rating-row"><span class="label">Average</span>${r.avg ? createStars(r.avg, "stars-avg") : "-"}</div>
       `;
+      container.appendChild(card);
     });
-
-    tableHTML += `</table>`;
-    container.innerHTML = tableHTML;
   }
 
   renderRatings();
